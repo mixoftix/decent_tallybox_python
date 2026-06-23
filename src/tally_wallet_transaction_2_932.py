@@ -41,6 +41,22 @@ GRAPH_DOMAINS = [
     "gpp_venus.mixoftix.net",
     "gpp_pluto.mixoftix.net"
 ]
+
+# Decent GPP - Live Demo
+GRAPH_URLS = [
+    "79.127.15.60:801",
+    "79.127.15.60:811",
+    "79.127.15.60:821"
+]
+# Tokens supported by each graph
+GRAPH_TOKENS = [
+    "2ZR",                   # Mars
+    "",                      # Venus
+    ""                       # Pluto
+]
+
+# Decent GPP - Research Lab
+"""
 GRAPH_URLS = [
     "192.168.88.111:701",
     "192.168.88.111:711",
@@ -50,8 +66,9 @@ GRAPH_URLS = [
 GRAPH_TOKENS = [
     "USD,TLH,IRR",           # Mars
     "2ZR",                   # Venus
-    "2ZR,IRR"                # Pluto
+    "USD,2ZR"                # Pluto
 ]
+"""
 
 # Base58 encoding function
 def base58_encode(bytes_data):
@@ -932,10 +949,13 @@ def main():
 
     except Exception as e:
         print(f"\nxx Error: {str(e)} xx")
+        input("")
     except KeyboardInterrupt:
         print("\n\nProgram terminated by user.")
+        input("")
     finally:
         print("Goodbye!")
+        input("")
 
 
 if __name__ == "__main__":

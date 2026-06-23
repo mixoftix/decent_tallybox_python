@@ -33,6 +33,8 @@ import random
 import string
 import re
 import ecdsa
+import getpass
+
 
 # Step 1: Generate a private-public key pair
 def generate_key_pair():
@@ -492,9 +494,22 @@ def main():
         print("Invalid choice. Please select A or B.")
         option = input("Enter your choice (A or B): ").strip().upper()
 
-    # Step 2: Get wallet name, password, and debug log preference
+    # Step 2: Get wallet name, password (hidden), and debug log preference
     wallet_name = input("Enter wallet name: ").strip()
-    password = input("Enter local password: ").strip()
+    
+    while True:
+        password = getpass.getpass("Enter local password: ")
+        if not password:
+            print("Password cannot be empty. Please try again.")
+            continue
+            
+        password_confirm = getpass.getpass("Confirm local password: ")
+        
+        if password == password_confirm:
+            break
+        else:
+            print("Passwords do not match. Please try again.")
+    
     debug_choice = input("Show AES debug logs? (y/N): ").strip().lower()
     show_logs = debug_choice in ['y', 'yes']
 
@@ -552,6 +567,9 @@ def main():
     print(xml_str)
     print(f"\nXML data has been saved to {wallet_name}.xml")
     print("\n** Private Key (write it down somewhere safe):\n  ", private_key_bytes.hex().upper())
+
+    print("\nGoodbye!")
+    input("")
 
 if __name__ == "__main__":
     main()
