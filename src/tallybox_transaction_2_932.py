@@ -44,9 +44,9 @@ GRAPH_DOMAINS = [
 
 # Decent GPP - Live Demo
 GRAPH_URLS = [
-    "79.127.15.60:801",
-    "79.127.15.60:811",
-    "79.127.15.60:821"
+    "gpp_mars_ws.mixoftix.net",
+    "gpp_venus_ws.mixoftix.net",
+    "gpp_pluto_ws.mixoftix.net"
 ]
 # Tokens supported by each graph
 GRAPH_TOKENS = [
