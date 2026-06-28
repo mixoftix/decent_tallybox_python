@@ -2,8 +2,8 @@
 
 """
 Decent TallyBox (Wallet) Transaction Script
-Version: 2.932 (MVP)
-Updated: 2026-06-19
+Version: 2.934 (MVP)
+Updated: 2026-06-28
 
 This script enables a Tallybox wallet (https://wallet.mixoftix.net) for secure management of
 tokens on a DAG network. This implementation provides AES-256-CBC encryption
@@ -41,18 +41,23 @@ GRAPH_DOMAINS = [
     "gpp_venus.mixoftix.net",
     "gpp_pluto.mixoftix.net"
 ]
-
 # Decent GPP - Live Demo
 GRAPH_URLS = [
     "gpp_mars_ws.mixoftix.net",
     "gpp_venus_ws.mixoftix.net",
     "gpp_pluto_ws.mixoftix.net"
 ]
-# Tokens supported by each graph
+# Tokens supported by each GPP
 GRAPH_TOKENS = [
     "2ZR",                   # Mars
     "",                      # Venus
     ""                       # Pluto
+]
+# Zones supported by each GPP
+GRAPH_ZONES = [
+    "Mars",                      # Mars
+    "Venus",                     # Venus
+    "Pluto"                      # Pluto
 ]
 
 # Decent GPP - Research Lab
@@ -423,10 +428,12 @@ def pass_kyc(wallet_state):
 
 
 def get_graph_menu():
-    """Return formatted list showing graph + supported tokens"""
+    """Return formatted list showing graph + supported tokens + zones"""
     menu = []
-    for i, (domain, tokens) in enumerate(zip(GRAPH_DOMAINS, GRAPH_TOKENS), 1):
-        menu.append(f"[{i}] {domain}  [ {tokens} ]")
+    for i, (domain, tokens, zones) in enumerate(zip(GRAPH_DOMAINS, GRAPH_TOKENS, GRAPH_ZONES), 1):
+        token_str = tokens if tokens else "-"
+        zone_str = zones if zones else "-"
+        menu.append(f"[{i}] {domain:25}  [ Tokens: {token_str:8} ]  [ Zones: {zone_str} ]")
     return menu
 
 
@@ -675,6 +682,15 @@ def validate_wallet_address(address):
     return checksum_md5 == computed_md5
 
 
+def get_zones(graph_idx: int) -> set[str]:
+    """Safely extract zones for a graph."""
+    zone_str = GRAPH_ZONES[graph_idx].strip()
+    if not zone_str:
+        return set()
+    zones = {z.strip() for z in zone_str.split(',') if z.strip()}
+    return zones
+
+
 # Determine allowed tokens
 def get_tokens(graph_idx: int) -> set[str]:
     """Safely extract non-empty tokens for a graph."""
@@ -802,11 +818,13 @@ def prepare_transaction(wallet_state):
             return "BACK"
         if idx < 0 or idx >= len(GRAPH_DOMAINS):
             raise ValueError("Invalid selection")
-        graph_from = GRAPH_DOMAINS[idx]
+
         graph_from_idx = idx
+        graph_from = GRAPH_DOMAINS[idx]
+        zones_from = get_zones(graph_from_idx)
 
         # ====================== GRAPH TO ======================
-        print("\nSelect graph_to domain:")
+        print(f"\nSelect graph_to domain (must share zone with {graph_from}):")
         for line in get_graph_menu():
             print(line)
         print(f"[{len(GRAPH_DOMAINS)+1}] Back to Main Menu")
@@ -816,7 +834,27 @@ def prepare_transaction(wallet_state):
             return "BACK"
         if idx < 0 or idx >= len(GRAPH_DOMAINS):
             raise ValueError("Invalid selection")
+
         graph_to = GRAPH_DOMAINS[idx]
+        graph_to_idx = idx
+        zones_to = get_zones(graph_to_idx)
+
+
+        # ====================== ZONE VALIDATION ======================
+        if zones_from and zones_to:                     # Both have zones defined
+            common_zones = zones_from.intersection(zones_to)
+            if not common_zones:
+                raise ValueError(f"xx No common zone between {graph_from} and {graph_to}. "
+                               f"\nxx Transfer not allowed.")
+            print(f"== Common zone(s) found: {common_zones}")
+        else:
+            # No zones defined or one side has no zones → only allow internal transfer
+            if graph_from != graph_to:
+                print(f"xx Warning: One or both graphs have no zones defined.")
+                print(f"xx Only same-graph (internal) transfers are allowed.")
+                if graph_from != graph_to:
+                    raise ValueError("xx Cross-graph transfer not allowed when zones are not configured.")
+
 
         # ====================== TOKEN & DETAILS ======================
         tokens_from = get_tokens(graph_from_idx)
