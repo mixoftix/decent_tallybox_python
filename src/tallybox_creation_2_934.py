@@ -521,11 +521,11 @@ def main():
     else:
         # Recover wallet using an existing private key
         print("Recovering wallet from private key...")
-        private_key_hex = input("Enter your existing private key (in hex format, 64 characters): ").strip()
+        private_key_hex = input("Enter your existing private key (in hex format, <= 64 characters): ").strip()
         # Basic validation for the private key (should be 64 hex characters)
-        while len(private_key_hex) != 64 or not all(c in '0123456789abcdefABCDEF' for c in private_key_hex):
-            print("Invalid private key. It must be a 64-character hexadecimal string.")
-            private_key_hex = input("Enter your existing private key (in hex format, 64 characters): ").strip()
+        while len(private_key_hex) > 64 or not all(c in '0123456789abcdefABCDEF' for c in private_key_hex):
+            print("Invalid private key!")
+            private_key_hex = input("Enter your existing private key (in hex format, <= 64 characters): ").strip()
         x, y, private_key = derive_public_key_from_private(private_key_hex)
 
     # Step 4: Compress and encode the public key
